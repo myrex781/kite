@@ -339,7 +339,6 @@ export function AuthenticationManagement() {
                             skipTLSVerify: checked,
                           }))
                         }
-                        disabled={isLdapManaged}
                       />
                     </div>
                   </div>
