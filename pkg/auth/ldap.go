@@ -23,6 +23,7 @@ var (
 type ldapConfig struct {
 	ServerURL            string
 	UseStartTLS          bool
+	SkipTLSVerify        bool
 	BindDN               string
 	BindPassword         string
 	UserBaseDN           string
@@ -59,8 +60,9 @@ func (a *LDAPAuthenticator) Authenticate(setting *model.LDAPSetting, username, p
 
 	if cfg.UseStartTLS && parsedURL.Scheme == "ldap" {
 		if err := conn.StartTLS(&tls.Config{
-			MinVersion: tls.VersionTLS12,
-			ServerName: parsedURL.Hostname(),
+			MinVersion:         tls.VersionTLS12,
+			ServerName:         parsedURL.Hostname(),
+			InsecureSkipVerify: cfg.SkipTLSVerify,
 		}); err != nil {
 			return nil, fmt.Errorf("failed to start ldap tls: %w", err)
 		}
@@ -121,6 +123,7 @@ func newLDAPConfig(setting *model.LDAPSetting) (ldapConfig, error) {
 	return ldapConfig{
 		ServerURL:            normalized.ServerURL,
 		UseStartTLS:          normalized.UseStartTLS,
+		SkipTLSVerify:        normalized.SkipTLSVerify,
 		BindDN:               normalized.BindDN,
 		BindPassword:         string(normalized.BindPassword),
 		UserBaseDN:           normalized.UserBaseDN,
@@ -145,9 +148,16 @@ func dialLDAP(cfg ldapConfig) (*ldap.Conn, *url.URL, error) {
 		return nil, nil, errors.New("ldap host is empty")
 	}
 
+	tlsConfig := &tls.Config{
+		MinVersion:         tls.VersionTLS12,
+		ServerName:         parsedURL.Hostname(),
+		InsecureSkipVerify: cfg.SkipTLSVerify,
+	}
+
 	conn, err := ldap.DialURL(
 		cfg.ServerURL,
 		ldap.DialWithDialer(&net.Dialer{Timeout: 10 * time.Second}),
+		ldap.DialWithTLSConfig(tlsConfig),
 	)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to connect to ldap: %w", err)

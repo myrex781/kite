@@ -28,6 +28,7 @@ function createDefaultSettings(): AuthenticationFormData {
     enabled: false,
     serverUrl: '',
     useStartTLS: false,
+    skipTLSVerify: false,
     bindDn: '',
     bindPassword: '',
     bindPasswordConfigured: false,
@@ -50,6 +51,7 @@ function toFormData(data?: LDAPSetting): AuthenticationFormData {
     enabled: data.enabled ?? false,
     serverUrl: data.serverUrl || '',
     useStartTLS: data.useStartTLS ?? false,
+    skipTLSVerify: data.skipTLSVerify ?? false,
     bindDn: data.bindDn || '',
     bindPassword: '',
     bindPasswordConfigured: data.bindPasswordConfigured ?? false,
@@ -131,6 +133,7 @@ export function AuthenticationManagement() {
       enabled: formData.enabled,
       serverUrl: formData.serverUrl.trim(),
       useStartTLS: formData.useStartTLS,
+      skipTLSVerify: formData.skipTLSVerify,
       bindDn: formData.bindDn.trim(),
       userBaseDn: formData.userBaseDn.trim(),
       userFilter: formData.userFilter.trim(),
@@ -307,6 +310,36 @@ export function AuthenticationManagement() {
                             useStartTLS: checked,
                           }))
                         }
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2 md:col-span-2">
+                    <div className="flex items-center justify-between rounded-md border px-3 py-2">
+                      <div>
+                        <Label htmlFor="ldap-skip-tls-verify" className="text-sm">
+                          {t(
+                            'authenticationManagement.ldap.form.skipTLSVerify',
+                            'Skip TLS Verify'
+                          )}
+                        </Label>
+                        <p className="text-xs text-muted-foreground">
+                          {t(
+                            'authenticationManagement.ldap.form.skipTLSVerifyHint',
+                            'Skip TLS certificate verification (not recommended for production).'
+                          )}
+                        </p>
+                      </div>
+                      <Switch
+                        id="ldap-skip-tls-verify"
+                        checked={formData.skipTLSVerify}
+                        onCheckedChange={(checked) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            skipTLSVerify: checked,
+                          }))
+                        }
+                        disabled={isLdapManaged}
                       />
                     </div>
                   </div>

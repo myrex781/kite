@@ -384,6 +384,7 @@ export interface LDAPSetting {
   enabled: boolean
   serverUrl: string
   useStartTLS: boolean
+  skipTLSVerify: boolean
   bindDn: string
   bindPassword: string
   bindPasswordConfigured: boolean
@@ -400,6 +401,7 @@ export interface LDAPSettingUpdateRequest {
   enabled: boolean
   serverUrl: string
   useStartTLS: boolean
+  skipTLSVerify: boolean
   bindDn: string
   bindPassword?: string
   userBaseDn: string

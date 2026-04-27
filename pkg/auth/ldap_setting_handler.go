@@ -14,6 +14,7 @@ type UpdateLDAPSettingRequest struct {
 	Enabled              *bool   `json:"enabled"`
 	ServerURL            *string `json:"serverUrl"`
 	UseStartTLS          *bool   `json:"useStartTLS"`
+	SkipTLSVerify        *bool   `json:"skipTLSVerify"`
 	BindDN               *string `json:"bindDn"`
 	BindPassword         *string `json:"bindPassword"`
 	UserBaseDN           *string `json:"userBaseDn"`
@@ -73,6 +74,7 @@ func ldapSettingResponse(setting *model.LDAPSetting) gin.H {
 		"enabled":                setting.Enabled,
 		"serverUrl":              setting.ServerURL,
 		"useStartTLS":            setting.UseStartTLS,
+		"skipTLSVerify":          setting.SkipTLSVerify,
 		"bindDn":                 setting.BindDN,
 		"bindPassword":           "",
 		"bindPasswordConfigured": setting.BindPasswordConfigured(),
@@ -96,6 +98,9 @@ func mergeLDAPSetting(current *model.LDAPSetting, req UpdateLDAPSettingRequest) 
 	}
 	if req.UseStartTLS != nil {
 		merged.UseStartTLS = *req.UseStartTLS
+	}
+	if req.SkipTLSVerify != nil {
+		merged.SkipTLSVerify = *req.SkipTLSVerify
 	}
 	if req.BindDN != nil {
 		merged.BindDN = strings.TrimSpace(*req.BindDN)

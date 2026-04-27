@@ -19,6 +19,7 @@ type LDAPSetting struct {
 	Enabled              bool         `json:"enabled" gorm:"column:enabled;type:boolean;not null;default:false"`
 	ServerURL            string       `json:"serverUrl" gorm:"column:server_url;type:varchar(500)"`
 	UseStartTLS          bool         `json:"useStartTLS" gorm:"column:use_starttls;type:boolean;not null;default:false"`
+	SkipTLSVerify        bool         `json:"skipTLSVerify" gorm:"column:skip_tls_verify;type:boolean;not null;default:false"`
 	BindDN               string       `json:"bindDn" gorm:"column:bind_dn;type:varchar(500)"`
 	BindPassword         SecretString `json:"bindPassword" gorm:"column:bind_password;type:text"`
 	UserBaseDN           string       `json:"userBaseDn" gorm:"column:user_base_dn;type:varchar(500)"`
@@ -35,6 +36,7 @@ func DefaultLDAPSetting() LDAPSetting {
 		Model:                Model{ID: 1},
 		Enabled:              false,
 		UseStartTLS:          false,
+		SkipTLSVerify:        false,
 		UserFilter:           DefaultLDAPUserFilter,
 		UsernameAttribute:    DefaultLDAPUsernameAttribute,
 		DisplayNameAttribute: DefaultLDAPDisplayNameAttribute,
@@ -53,6 +55,7 @@ func (s LDAPSetting) Normalized() LDAPSetting {
 	normalized.Enabled = s.Enabled
 	normalized.ServerURL = strings.TrimSpace(s.ServerURL)
 	normalized.UseStartTLS = s.UseStartTLS
+	normalized.SkipTLSVerify = s.SkipTLSVerify
 	normalized.BindDN = strings.TrimSpace(s.BindDN)
 	normalized.BindPassword = s.BindPassword
 	normalized.UserBaseDN = strings.TrimSpace(s.UserBaseDN)
@@ -118,6 +121,7 @@ func UpdateLDAPSetting(setting *LDAPSetting) (*LDAPSetting, error) {
 	current.Enabled = normalized.Enabled
 	current.ServerURL = normalized.ServerURL
 	current.UseStartTLS = normalized.UseStartTLS
+	current.SkipTLSVerify = normalized.SkipTLSVerify
 	current.BindDN = normalized.BindDN
 	current.BindPassword = normalized.BindPassword
 	current.UserBaseDN = normalized.UserBaseDN
