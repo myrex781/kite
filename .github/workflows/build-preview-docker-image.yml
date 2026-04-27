@@ -12,8 +12,6 @@ on:
   workflow_run:
     workflows: ["CI"]
     types: [completed]
-    branches: [main]
-    tags: ["v*.*.*"]
 
 env:
   GO_VERSION: "1.25"
