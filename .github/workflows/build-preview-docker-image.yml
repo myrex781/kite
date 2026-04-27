@@ -5,7 +5,7 @@ permissions:
   packages: write
 
 concurrency:
-  group: docker-ci-${{ github.event.workflow_run.head_branch }}
+  group: docker-ci-${{ github.event.workflow_run.head_branch || github.event.workflow_run.head_sha }}
   cancel-in-progress: true
 
 on:
@@ -13,6 +13,7 @@ on:
     workflows: ["CI"]
     types: [completed]
     branches: [main]
+    tags: ["v*.*.*"]
 
 env:
   GO_VERSION: "1.25"
@@ -68,8 +69,24 @@ jobs:
       - name: Generate tags
         id: tags
         run: |
-          echo "tags=ghcr.io/${{ github.repository_owner }}/kite:main" >> $GITHUB_OUTPUT
-          echo "image_tag=main" >> $GITHUB_OUTPUT
+          # Get the ref (branch or tag) from the CI run
+          CI_REF=$(git rev-parse --abbrev-ref HEAD || true)
+          if [ -z "$CI_REF" ] || [ "$CI_REF" = "HEAD" ]; then
+            # If it's not a branch, check if it's a tag
+            CI_TAG=$(git describe --tags --exact-match 2>/dev/null || true)
+            if [ -n "$CI_TAG" ]; then
+              echo "tags=ghcr.io/${{ github.repository_owner }}/kite:$CI_TAG" >> $GITHUB_OUTPUT
+              echo "image_tag=$CI_TAG" >> $GITHUB_OUTPUT
+            else
+              # Default to main if no branch or tag
+              echo "tags=ghcr.io/${{ github.repository_owner }}/kite:main" >> $GITHUB_OUTPUT
+              echo "image_tag=main" >> $GITHUB_OUTPUT
+            fi
+          else
+            # Use branch name
+            echo "tags=ghcr.io/${{ github.repository_owner }}/kite:$CI_REF" >> $GITHUB_OUTPUT
+            echo "image_tag=$CI_REF" >> $GITHUB_OUTPUT
+          fi
 
       - name: Build
         run: make cross-compile
