@@ -67,23 +67,34 @@ jobs:
       - name: Generate tags
         id: tags
         run: |
-          # Try to get the tag from the CI run's ref
-          # First, get all tags pointing to the current commit
+          # Print debug information
+          echo "Current commit: $(git rev-parse HEAD)"
+          echo "All tags: $(git tag -l)"
+          echo "Tags pointing to current commit: $(git tag -l --points-at HEAD)"
+          
+          # Get all tags pointing to the current commit
           TAGS=$(git tag -l --points-at HEAD)
-          if [ -n "$TAGS" ]; then
-            # If there are tags, use the first one
-            CI_TAG=$(echo "$TAGS" | head -n 1)
+          
+          # Filter for version tags (v*.*.*)
+          VERSION_TAGS=$(echo "$TAGS" | grep -E "^v[0-9]+\.[0-9]+\.[0-9]+$")
+          
+          if [ -n "$VERSION_TAGS" ]; then
+            # If there are version tags, use the first one
+            CI_TAG=$(echo "$VERSION_TAGS" | head -n 1)
+            echo "Found version tag: $CI_TAG"
             echo "tags=ghcr.io/${{ github.repository_owner }}/kite:$CI_TAG" >> $GITHUB_OUTPUT
             echo "image_tag=$CI_TAG" >> $GITHUB_OUTPUT
           else
-            # If no tags, try to get the branch name
+            # If no version tags, try to get the branch name
             CI_REF=$(git rev-parse --abbrev-ref HEAD || true)
             if [ -n "$CI_REF" ] && [ "$CI_REF" != "HEAD" ]; then
               # Use branch name
+              echo "Using branch name: $CI_REF"
               echo "tags=ghcr.io/${{ github.repository_owner }}/kite:$CI_REF" >> $GITHUB_OUTPUT
               echo "image_tag=$CI_REF" >> $GITHUB_OUTPUT
             else
               # Default to main if no branch or tag
+              echo "Using default tag: main"
               echo "tags=ghcr.io/${{ github.repository_owner }}/kite:main" >> $GITHUB_OUTPUT
               echo "image_tag=main" >> $GITHUB_OUTPUT
             fi
