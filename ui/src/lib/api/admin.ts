@@ -497,3 +497,4 @@ export const deleteAPIKey = async (
 ): Promise<{ message: string }> => {
   return await apiClient.delete<{ message: string }>(`/admin/apikeys/${id}`)
 }
+// Trigger CI workflow
